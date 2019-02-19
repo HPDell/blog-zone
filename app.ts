@@ -8,6 +8,14 @@ import * as bodyParser from 'body-parser';
 import { createConnection } from "typeorm";
 
 import index from './routes/index';
+import api from './routes/api';
+
+class ExpressStatusError extends Error {
+    status: number;
+    constructor(parameters) {
+        super(parameters);
+    }
+}
 
 createConnection().then(connection => {
     const app = express();
@@ -21,13 +29,7 @@ createConnection().then(connection => {
     app.use(express.static(path.join(__dirname, 'public')));
 
     app.use('/', index);
-
-    class ExpressStatusError extends Error {
-        status: number;
-        constructor(parameters) {
-            super(parameters);
-        }
-    }
+    app.use('/api', api)
 
     // catch 404 and forward to error handler
     app.use(function (req: Request, res: Response, next: Function) {
