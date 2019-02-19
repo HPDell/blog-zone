@@ -1,0 +1,1 @@
+DELETE http://localhost:3000/api/saying/01527a73-7e13-4792-87fe-96d6cfe0d5e1/ HTTP/1.1

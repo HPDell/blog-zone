@@ -11,6 +11,9 @@ export class Saying {
     @Column()
     content: string;
 
+    @Column()
+    sayingDate: Date;
+
     @ManyToOne(type => User, user => user.sayings)
     user: User;
 
