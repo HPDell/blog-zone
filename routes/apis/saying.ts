@@ -23,7 +23,9 @@ router.get("/", async function (req: Request, res: Response) {
 router.get("/:id/", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
-        const saying = await connection.getRepository(Saying).findOne(req.params.id);
+        const saying = await connection.getRepository(Saying).findOne(req.params.id, {
+            relations: ["pictures"]
+        });
         res.json(saying);
     } catch (error) {
         res.sendStatus(500);
