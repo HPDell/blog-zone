@@ -1,9 +1,11 @@
 import * as express from 'express';
 import { Request, Response } from "express";
 import * as moment from "moment";
+import * as fs from "fs-extra";
 import { Saying } from '../../entity/Saying';
 import { getConnection } from 'typeorm';
 import { User } from '../../entity/User';
+import { Picture } from '../../entity/Picture';
 let router = express.Router();
 
 router.get("/", async function (req: Request, res: Response) {
@@ -57,13 +59,33 @@ router.delete("/:id/", async function (req: Request, res: Response) {
     try {
         let saying = await connection.getRepository(Saying).findOne(req.params.id);
         try {
+            let pictureList = await connection.getRepository(Picture).find({
+                saying: saying
+            });
+            for (const pic of pictureList) {
+                try {
+                    await fs.remove(pic.path);
+                    try {
+                        await connection.manager.remove(pic);
+                    } catch (error) {
+                        res.sendStatus(500);
+                        return;
+                    }
+                } catch (error) {
+                    res.sendStatus(500);
+                    return;
+                }
+            }
             await connection.manager.remove(saying);
             res.sendStatus(200);
+            return;
         } catch (error) {
             res.sendStatus(500);
+            return;
         }
     } catch (error) {
-        res.sendStatus(500);        
+        res.sendStatus(500);
+        return;
     }
 })
 
