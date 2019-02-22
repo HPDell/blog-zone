@@ -9,6 +9,7 @@ import { createConnection } from "typeorm";
 
 import index from './routes/index';
 import api from './routes/api';
+import login from './routes/login';
 
 class ExpressStatusError extends Error {
     status: number;
@@ -30,6 +31,7 @@ createConnection().then(connection => {
 
     app.use('/', index);
     app.use('/api', api)
+    app.use('/login', login)
 
     // catch 404 and forward to error handler
     app.use(function (req: Request, res: Response, next: Function) {

@@ -12,7 +12,16 @@ export class User {
     name: string;
 
     @Column()
-    nickname: string;
+    password: string;
+
+    @Column()
+    description: string;
+
+    @Column({nullable: true, unique: true})
+    token: string;
+
+    @Column({nullable: true})
+    lastLoginTime: Date;
 
     @OneToMany(type => Saying, saying => saying.user)
     sayings: Saying[];

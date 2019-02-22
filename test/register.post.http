@@ -1,0 +1,8 @@
+POST http://localhost:3000/login/register HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "HPDell",
+    "password": "hyg4997788",
+    "description": "我们在小孩和大人的转角盖一座城堡"
+}
