@@ -48,7 +48,6 @@ router.post("/", async function (req: Request, res: Response) {
 });
 
 router.get("/avatar/:path", function (req: Request, res: Response) {
-    console.log(req.params.path);
     res.sendFile(join(__dirname, "../public/avatars", req.params.path));
 })
 
@@ -69,6 +68,9 @@ router.post("/auto", async function (req: Request, res: Response) {
                 console.log("Update user token error.")
             }
             res.json(user);
+        } else {
+            res.sendStatus(500);
+            return;
         }
     } catch (error) {
         console.log(error);
