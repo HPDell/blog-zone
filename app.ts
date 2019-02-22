@@ -8,6 +8,15 @@ import * as bodyParser from 'body-parser';
 import { createConnection } from "typeorm";
 
 import index from './routes/index';
+import api from './routes/api';
+import login from './routes/login';
+
+class ExpressStatusError extends Error {
+    status: number;
+    constructor(parameters) {
+        super(parameters);
+    }
+}
 
 createConnection().then(connection => {
     const app = express();
@@ -18,16 +27,11 @@ createConnection().then(connection => {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: false }));
     app.use(cookieParser());
-    app.use(express.static(path.join(__dirname, 'public')));
+    // app.use(express.static(path.join(__dirname, 'public')));
 
     app.use('/', index);
-
-    class ExpressStatusError extends Error {
-        status: number;
-        constructor(parameters) {
-            super(parameters);
-        }
-    }
+    app.use('/api', api)
+    app.use('/login', login)
 
     // catch 404 and forward to error handler
     app.use(function (req: Request, res: Response, next: Function) {
