@@ -1,0 +1,7 @@
+POST http://localhost:3000/api/post/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "title": "测试博文图片关联",
+    "content": "![](/api/picture/95ce15a6-7d9d-423b-9594-59b1b27b4280/)"
+}

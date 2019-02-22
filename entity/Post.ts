@@ -17,6 +17,9 @@ export class Post {
     @Column()
     postDate: Date;
 
+    @OneToMany(type => Picture, picture => picture.post)
+    pictures: Picture[];
+
     @ManyToOne(type => User, user => user.posts)
     user: User;
 

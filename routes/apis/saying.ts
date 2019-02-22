@@ -18,7 +18,9 @@ router.get("/", async function (req: Request, res: Response) {
         });
         res.json(sayings.map(item => item.id));
     } catch (error) {
+        console.log(error);
         res.sendStatus(500);
+        return;
     }
 });
 
@@ -30,7 +32,9 @@ router.get("/:id/", async function (req: Request, res: Response) {
         });
         res.json(saying);
     } catch (error) {
+        console.log(error);
         res.sendStatus(500);
+        return;
     }
 });
 
@@ -47,10 +51,14 @@ router.post("/", async function (req: Request, res: Response) {
             let saying = await connection.manager.save(sayingInfo);
             res.json(saying);
         } catch (error) {
+            console.log(error);
             res.sendStatus(500);
+            return;
         }
     } catch (error) {
+        console.log(error);
         res.sendStatus(500);
+        return;
     }
 });
 
@@ -68,10 +76,12 @@ router.delete("/:id/", async function (req: Request, res: Response) {
                     try {
                         await connection.manager.remove(pic);
                     } catch (error) {
+                        console.log(error);
                         res.sendStatus(500);
                         return;
                     }
                 } catch (error) {
+                    console.log(error);
                     res.sendStatus(500);
                     return;
                 }
@@ -80,10 +90,12 @@ router.delete("/:id/", async function (req: Request, res: Response) {
             res.sendStatus(200);
             return;
         } catch (error) {
+            console.log(error);
             res.sendStatus(500);
             return;
         }
     } catch (error) {
+        console.log(error);
         res.sendStatus(500);
         return;
     }

@@ -59,16 +59,18 @@ router.post("/", upload.single('photos'), async function (req: Request, res: Res
             const saying = await connection.getRepository(Saying).findOne(req.query.saying);
             pictureInfo.saying = saying;
         } catch (error) {
+            console.log(error);
             res.sendStatus(500);
+            return;
         }
-    } else {
-        res.sendStatus(500);
     }
     try {
         let picture = await connection.manager.save(pictureInfo);
         res.json(picture);
     } catch (error) {
+        console.log(error);
         res.sendStatus(500);
+        return;
     }
 })
 
