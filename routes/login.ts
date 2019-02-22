@@ -28,6 +28,7 @@ router.post("/", async function (req: Request, res: Response) {
             try {
                 user.token = token;
                 user.lastLoginTime = now.toDate();
+                await connection.manager.save(user);
             } catch (error) {
                 console.log("Update user token error.")
             }
@@ -44,6 +45,31 @@ router.post("/", async function (req: Request, res: Response) {
         return;
     }
 });
+
+router.post("/auto", async function (req: Request, res: Response) {
+    const connection = getConnection();
+    try {
+        let user = await connection.getRepository(User).findOne({
+            where: {
+                token: req.body.token
+            }
+        });
+        if (user) {
+            const now = moment();
+            try {
+                user.lastLoginTime = now.toDate();
+                await connection.manager.save(user);
+            } catch (error) {
+                console.log("Update user token error.")
+            }
+            res.json(user);
+        }
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+        return;
+    }
+})
 
 router.post("/register", async function (req: Request, res: Response) {
     const connection = getConnection();
