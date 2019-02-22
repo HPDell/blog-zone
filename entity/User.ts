@@ -21,6 +21,9 @@ export class User {
     token: string;
 
     @Column({nullable: true})
+    avatar: string;
+
+    @Column({nullable: true})
     lastLoginTime: Date;
 
     @OneToMany(type => Saying, saying => saying.user)

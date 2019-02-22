@@ -45,14 +45,16 @@ router.post("/", async function (req: Request, res: Response) {
     // 查找博文中的图片链接
     postInfo.pictures = [];
     let pictureLinkArray = postInfo.content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/);
-    for (const link of pictureLinkArray) {
-        let pictureID = link.match(/([A-Za-z0-9]+\-){4}([A-Za-z0-9]+)/)[0];
-        if (pictureID) {
-            try {
-                let picture = await connection.getRepository(Picture).findOne(pictureID);
-                postInfo.pictures.push(picture);
-            } catch (error) {
-                console.log(`Query picture ${pictureID} error:`, error);
+    if (pictureLinkArray) {
+        for (const link of pictureLinkArray) {
+            let pictureID = link.match(/([A-Za-z0-9]+\-){4}([A-Za-z0-9]+)/)[0];
+            if (pictureID) {
+                try {
+                    let picture = await connection.getRepository(Picture).findOne(pictureID);
+                    postInfo.pictures.push(picture);
+                } catch (error) {
+                    console.log(`Query picture ${pictureID} error:`, error);
+                }
             }
         }
     }

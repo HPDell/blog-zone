@@ -5,6 +5,7 @@ import { getConnection, Raw } from 'typeorm';
 import * as jwt from "jsonwebtoken";
 import * as moment from "moment";
 import { User } from "../entity/User";
+import { join } from 'path';
 
 router.post("/", async function (req: Request, res: Response) {
     const connection = getConnection();
@@ -16,7 +17,7 @@ router.post("/", async function (req: Request, res: Response) {
                 name: Raw(alias => `LOWER(${alias}) = '${username.toLowerCase()}'`),
                 password: password
             },
-            select: ["id", "name", "description"]
+            select: ["id", "name", "description", "avatar"]
         });
         if (user) {
             const now = moment();
@@ -45,6 +46,11 @@ router.post("/", async function (req: Request, res: Response) {
         return;
     }
 });
+
+router.get("/avatar/:path", function (req: Request, res: Response) {
+    console.log(req.params.path);
+    res.sendFile(join(__dirname, "../public/avatars", req.params.path));
+})
 
 router.post("/auto", async function (req: Request, res: Response) {
     const connection = getConnection();
