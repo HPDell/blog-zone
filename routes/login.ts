@@ -21,11 +21,15 @@ router.post("/", async function (req: Request, res: Response) {
         });
         if (user) {
             const now = moment();
-            const token = jwt.sign({
-                username: user.name,
-                password: user.password,
-                logintime: now.format("x")
-            }, "blog-zone");
+            let token = user.token;
+            if (now.diff(user.lastLoginTime, "days") > 30) {
+                user.token = jwt.sign({
+                    username: user.name,
+                    password: user.password,
+                    logintime: now.format("x")
+                }, "blog-zone");
+                token = user.token;
+            }
             try {
                 user.token = token;
                 user.lastLoginTime = now.toDate();
@@ -61,6 +65,10 @@ router.post("/auto", async function (req: Request, res: Response) {
         });
         if (user) {
             const now = moment();
+            if (now.diff(user.lastLoginTime, "days") > 30) {
+                res.sendStatus(500);
+                return;
+            }
             try {
                 user.lastLoginTime = now.toDate();
                 await connection.manager.save(user);
