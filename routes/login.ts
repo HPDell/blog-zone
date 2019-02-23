@@ -17,7 +17,7 @@ router.post("/", async function (req: Request, res: Response) {
                 name: Raw(alias => `LOWER(${alias}) = '${username.toLowerCase()}'`),
                 password: password
             },
-            select: ["id", "name", "description", "avatar"]
+            select: ["id", "name", "description", "avatar", "token"]
         });
         if (user) {
             const now = moment();
