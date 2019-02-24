@@ -44,7 +44,7 @@ router.post("/", async function (req: Request, res: Response) {
     postInfo.postDate = moment().toDate();
     // 查找博文中的图片链接
     postInfo.pictures = [];
-    let pictureLinkArray = postInfo.content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/);
+    let pictureLinkArray = postInfo.content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/g);
     if (pictureLinkArray) {
         for (const link of pictureLinkArray) {
             let pictureID = link.match(/([A-Za-z0-9]+\-){4}([A-Za-z0-9]+)/)[0];
@@ -65,6 +65,66 @@ router.post("/", async function (req: Request, res: Response) {
         console.log(error);
         res.sendStatus(500);
         return;
+    }
+});
+
+router.put("/:id", async function (req: Request, res: Response) {
+    const connection = getConnection();
+    try {
+        let postInfo = await connection.getRepository(Post).findOne(req.params.id, {
+            relations: ["pictures"]
+        });
+        if (postInfo) {
+            postInfo.title = req.body.title;
+            postInfo.postDate = moment().toDate();
+            // 查找博文中的图片链接
+            let content = req.body.content;
+            try {
+                let pictureList = await connection.getRepository(Picture).find({
+                    post: postInfo
+                });
+                let pictureLinkArray = content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/g);
+                if (pictureLinkArray) {
+                    for (const link of pictureLinkArray) {
+                        let pictureID = link.match(/([A-Za-z0-9]+\-){4}([A-Za-z0-9]+)/)[0];
+                        if (pictureID) {
+                            let index = pictureList.findIndex((i => i.id === pictureID));
+                            if (index > -1) {
+                                pictureList.splice(index, 1);
+                            } else {
+                                try {
+                                    let picture = await connection.getRepository(Picture).findOne(pictureID);
+                                    postInfo.pictures.push(picture);
+                                } catch (error) {
+                                    console.log(`Query picture ${pictureID} error:`, error);
+                                }
+                            }
+                        }
+                    }
+                    for (const pic of pictureList) {
+                        try {
+                            await fs.remove(pic.path);
+                            await connection.manager.remove(pic);
+                        } catch (error) {
+                            console.log(`Remove picture ${pic.id} error:`, error);
+                        }
+                    }
+                }
+                postInfo.content = content;
+            } catch (error) {
+                console.log(`Find picture list of post ${postInfo.id} error:`, error);
+            }
+            try {
+                let post = await connection.manager.save(postInfo);
+                res.json(post);
+            } catch (error) {
+                console.log(error);
+                res.sendStatus(500);
+                return;
+            }
+        }
+    } catch (error) {
+        
     }
 });
 
