@@ -22,7 +22,7 @@ router.post("/", async function (req: Request, res: Response) {
         if (user) {
             const now = moment();
             let token = user.token;
-            if (now.diff(user.lastLoginTime, "days") > 30) {
+            if (!user.lastLoginTime || now.diff(user.lastLoginTime, "days") > 30) {
                 user.token = jwt.sign({
                     username: user.name,
                     password: user.password,

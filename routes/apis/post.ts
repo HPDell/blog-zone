@@ -6,6 +6,7 @@ import { Post } from '../../entity/Post';
 import { getConnection } from 'typeorm';
 import { User } from '../../entity/User';
 import { Picture } from '../../entity/Picture';
+import { Category } from '../../entity/Category';
 let router = express.Router();
 
 router.get("/", async function (req: Request, res: Response) {
@@ -14,7 +15,8 @@ router.get("/", async function (req: Request, res: Response) {
         const posts = await connection.getRepository(Post).find({
             order: {
                 postDate: "DESC"
-            }
+            },
+            relations: ["category", "tags"]
         });
         res.json(posts);
     } catch (error) {
@@ -27,7 +29,9 @@ router.get("/", async function (req: Request, res: Response) {
 router.get("/:id/", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
-        const post = await connection.getRepository(Post).findOne(req.params.id);
+        const post = await connection.getRepository(Post).findOne(req.params.id, {
+            relations: ["category", "tags"]
+        });
         res.json(post);
     } catch (error) {
         console.log(error);
@@ -42,6 +46,20 @@ router.post("/", async function (req: Request, res: Response) {
     postInfo.title = req.body.title;
     postInfo.content = req.body.content;
     postInfo.postDate = moment().toDate();
+    try {
+        let categoryInfo = req.body.category;
+        if (categoryInfo && categoryInfo.id) {
+            let category = await connection.getRepository(Category).findOne(categoryInfo.id);
+            postInfo.category = category;
+        } else {
+            let category = await connection.getRepository(Category).findOne("default");
+            postInfo.category = category;
+        }
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+        return;
+    }
     // 查找博文中的图片链接
     postInfo.pictures = [];
     let pictureLinkArray = postInfo.content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/g);
@@ -77,6 +95,20 @@ router.put("/:id", async function (req: Request, res: Response) {
         if (postInfo) {
             postInfo.title = req.body.title;
             postInfo.postDate = moment().toDate();
+            try {
+                let categoryInfo = req.body.category;
+                if (categoryInfo && categoryInfo.id) {
+                    let category = await connection.getRepository(Category).findOne(categoryInfo.id);
+                    postInfo.category = category;
+                } else {
+                    let category = await connection.getRepository(Category).findOne("default");
+                    postInfo.category = category;
+                }
+            } catch (error) {
+                console.log(error);
+                res.sendStatus(500);
+                return;
+            }
             // 查找博文中的图片链接
             let content = req.body.content;
             try {
