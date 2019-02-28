@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable } from "typeorm";
 import { User } from "./User";
 import { Picture } from "./Picture";
+import { Category } from "./Category";
+import { Tag } from "./Tag";
 
 @Entity()
 export class Post {
@@ -22,5 +24,12 @@ export class Post {
 
     @ManyToOne(type => User, user => user.posts)
     user: User;
+
+    @ManyToOne(type => Category, category => category.posts)
+    category: Category;
+
+    @ManyToMany(type => Category, category => category.posts)
+    @JoinTable()
+    tags: Tag[];
 
 }
