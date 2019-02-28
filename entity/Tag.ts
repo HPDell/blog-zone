@@ -10,7 +10,7 @@ export class Tag {
     @Column()
     name: string;
 
-    @ManyToMany(type => Post, post => post.pictures)
-    posts: Post[];
+    // @ManyToMany(type => Post, post => post.tags)
+    // posts: Post[];
 
 }

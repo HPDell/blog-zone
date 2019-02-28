@@ -28,7 +28,7 @@ export class Post {
     @ManyToOne(type => Category, category => category.posts)
     category: Category;
 
-    @ManyToMany(type => Category, category => category.posts)
+    @ManyToMany(type => Tag)
     @JoinTable()
     tags: Tag[];
 

@@ -7,9 +7,29 @@ let router = express.Router();
 
 router.get("/", async function (req: Request, res: Response) {
     const connection = getConnection();
+    let categoriesInfo = [];
     try {
-        const categorys = await connection.getRepository(Category).find();
-        res.json(categorys);
+        const categories = await connection.getRepository(Category).find();
+        for (const category of categories) {
+            try {
+                const posts = await connection.getRepository(Post).find({
+                    where: {
+                        category: category
+                    },
+                    select: ["id"]
+                })
+                categoriesInfo.push({
+                    ...category,
+                    postNums: posts.length
+                });
+            } catch (error) {
+                console.log("Find tag post num error", error);
+                categoriesInfo.push({
+                    ...category
+                })
+            }
+        }
+        res.json(categoriesInfo);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);

@@ -10,7 +10,7 @@ export class Category {
     @Column()
     name: string;
 
-    @OneToMany(type => Post, post => post.pictures)
+    @OneToMany(type => Post, post => post.tags)
     posts: Post[];
 
 }
