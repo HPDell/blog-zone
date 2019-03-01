@@ -17,7 +17,8 @@ router.get("/", async function (req: Request, res: Response) {
             order: {
                 postDate: "DESC"
             },
-            relations: ["category", "tags"]
+            relations: ["category", "tags", "cover"],
+            select: ["id", "title", "postDate"]
         });
         res.json(posts);
     } catch (error) {
@@ -31,7 +32,7 @@ router.get("/:id/", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
         const post = await connection.getRepository(Post).findOne(req.params.id, {
-            relations: ["category", "tags"]
+            relations: ["category", "tags", "cover"]
         });
         res.json(post);
     } catch (error) {
@@ -91,6 +92,18 @@ router.post("/", async function (req: Request, res: Response) {
             }
         }
     }
+    if (req.body.cover) {
+        try {
+            let cover = await connection.getRepository(Picture).findOne(req.body.cover.id);
+            if (cover) {
+                postInfo.cover = cover;
+            } else {
+                console.log("Cover not found!");
+            }
+        } catch (error) {
+            console.log("Find cover error:", error);
+        }
+    }
     // 查找博文中的图片链接
     postInfo.pictures = [];
     let pictureLinkArray = postInfo.content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/g);
@@ -121,7 +134,7 @@ router.put("/:id", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
         let post = await connection.getRepository(Post).findOne(req.params.id, {
-            relations: ["pictures"]
+            relations: ["pictures", "cover"]
         });
         if (post) {
             post.title = req.body.title;
@@ -167,6 +180,28 @@ router.put("/:id", async function (req: Request, res: Response) {
                         }
                     } catch (error) {
                         console.log("Find tag error:", error);
+                    }
+                }
+            }
+            if (req.body.cover) {
+                let coverInfo = req.body.cover;
+                if (coverInfo.id !== post.cover.id) {
+                    let oldCover = post.cover;
+                    try {
+                        let cover = await connection.getRepository(Picture).findOne(coverInfo.id);
+                        if (cover) {
+                            post.cover = cover;
+                        } else {
+                            console.log("Cover not found!");
+                        }
+                    } catch (error) {
+                        console.log("Find cover error:", error);
+                    }
+                    try {
+                        await fs.remove(oldCover.path);
+                        await connection.manager.remove(oldCover);
+                    } catch (error) {
+                        console.log("Remove old cover error:", error);
                     }
                 }
             }

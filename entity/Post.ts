@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, ManyToMany, JoinTable, OneToOne, JoinColumn } from "typeorm";
 import { User } from "./User";
 import { Picture } from "./Picture";
 import { Category } from "./Category";
@@ -18,6 +18,10 @@ export class Post {
 
     @Column()
     postDate: Date;
+
+    @OneToOne(type => Picture, picture => picture.coverPost)
+    @JoinColumn()
+    cover: Picture;
 
     @OneToMany(type => Picture, picture => picture.post)
     pictures: Picture[];
