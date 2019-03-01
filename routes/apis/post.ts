@@ -183,10 +183,29 @@ router.put("/:id", async function (req: Request, res: Response) {
                     }
                 }
             }
-            if (req.body.cover) {
+            if (req.body.cover && req.body.cover.id) {
                 let coverInfo = req.body.cover;
-                if (coverInfo.id !== post.cover.id) {
-                    let oldCover = post.cover;
+                if (post.cover && post.cover.id) {
+                    if (coverInfo.id !== post.cover.id) {
+                        let oldCover = post.cover;
+                        try {
+                            let cover = await connection.getRepository(Picture).findOne(coverInfo.id);
+                            if (cover) {
+                                post.cover = cover;
+                            } else {
+                                console.log("Cover not found!");
+                            }
+                        } catch (error) {
+                            console.log("Find cover error:", error);
+                        }
+                        try {
+                            await fs.remove(oldCover.path);
+                            await connection.manager.remove(oldCover);
+                        } catch (error) {
+                            console.log("Remove old cover error:", error);
+                        }
+                    }
+                } else {
                     try {
                         let cover = await connection.getRepository(Picture).findOne(coverInfo.id);
                         if (cover) {
@@ -196,12 +215,6 @@ router.put("/:id", async function (req: Request, res: Response) {
                         }
                     } catch (error) {
                         console.log("Find cover error:", error);
-                    }
-                    try {
-                        await fs.remove(oldCover.path);
-                        await connection.manager.remove(oldCover);
-                    } catch (error) {
-                        console.log("Remove old cover error:", error);
                     }
                 }
             }
