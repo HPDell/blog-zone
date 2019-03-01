@@ -27,7 +27,10 @@ let storage = multer.diskStorage({
     }
 })
 let upload = multer({
-    storage: storage
+    storage: storage,
+    limits: {
+        fieldSize: 10485760
+    }
 })
 
 router.get("/", async function (req: Request, res: Response) {
