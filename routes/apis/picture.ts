@@ -37,9 +37,10 @@ router.get("/", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
         const pictures = await connection.getRepository(Picture).find();
-        res.json(pictures);
+        return res.json(pictures);
     } catch (error) {
-        res.status(500);
+        console.log(error);
+        return res.sendStatus(500);
     }
 });
 
@@ -47,9 +48,10 @@ router.get("/:id", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
         const picture = await connection.getRepository(Picture).findOne(req.params.id);
-        res.sendFile(picture.path);
+        return res.sendFile(picture.path);
     } catch (error) {
-        res.status(500);
+        console.log(error);
+        return res.sendStatus(500);
     }
 });
 
@@ -69,7 +71,7 @@ router.post("/", upload.single('photos'), async function (req: Request, res: Res
     }
     try {
         let picture = await connection.manager.save(pictureInfo);
-        res.json(picture);
+        return res.json(picture);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
