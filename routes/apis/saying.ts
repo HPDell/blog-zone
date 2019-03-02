@@ -16,7 +16,7 @@ router.get("/", async function (req: Request, res: Response) {
                 sayingDate: "DESC"
             }
         });
-        res.json(sayings.map(item => item.id));
+        return res.json(sayings.map(item => item.id));
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -30,7 +30,7 @@ router.get("/:id/", async function (req: Request, res: Response) {
         const saying = await connection.getRepository(Saying).findOne(req.params.id, {
             relations: ["pictures"]
         });
-        res.json(saying);
+        return res.json(saying);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -49,7 +49,7 @@ router.post("/", async function (req: Request, res: Response) {
             sayingInfo.content = req.body.content;
             sayingInfo.sayingDate = moment().toDate();
             let saying = await connection.manager.save(sayingInfo);
-            res.json(saying);
+            return res.json(saying);
         } catch (error) {
             console.log(error);
             res.sendStatus(500);

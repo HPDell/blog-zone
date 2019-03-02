@@ -28,7 +28,7 @@ router.get("/", async function (req: Request, res: Response) {
                 })
             }
         }
-        res.json(tagInfo);
+        return res.json(tagInfo);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -40,7 +40,7 @@ router.get("/:id/", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
         const tag = await connection.getRepository(Tag).findOne(req.params.id);
-        res.json(tag);
+        return res.json(tag);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -54,7 +54,7 @@ router.post("/", async function (req: Request, res: Response) {
         let tagInfo = new Tag();
         tagInfo.name = req.body.name;
         let tag = await connection.manager.save(tagInfo);
-        res.json(tag);
+        return res.json(tag);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -69,7 +69,7 @@ router.put("/:id/", async function (req: Request, res: Response) {
         try {
             tagInfo.name = req.body.name;
             let tag = await connection.manager.save(tagInfo);
-            res.json(tag);
+            return res.json(tag);
         } catch (error) {
             console.log(error);
             res.sendStatus(500);
