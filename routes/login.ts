@@ -37,7 +37,7 @@ router.post("/", async function (req: Request, res: Response) {
             } catch (error) {
                 console.log("Update user token error.")
             }
-            res.json({
+            return res.json({
                 ...user,
                 token: token
             });
@@ -75,7 +75,7 @@ router.post("/auto", async function (req: Request, res: Response) {
             } catch (error) {
                 console.log("Update user token error.")
             }
-            res.json(user);
+            return res.json(user);
         } else {
             res.sendStatus(500);
             return;
@@ -98,7 +98,7 @@ router.post("/register", async function (req: Request, res: Response) {
             userInfo.description = req.body.description;
             try {
                 let user = await connection.manager.save(userInfo);
-                res.json(user);
+                return res.json(user);
             } catch (error) {
                 console.log(error);
                 res.sendStatus(500);

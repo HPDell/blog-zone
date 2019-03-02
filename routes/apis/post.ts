@@ -20,7 +20,7 @@ router.get("/", async function (req: Request, res: Response) {
             relations: ["category", "tags", "cover"],
             select: ["id", "title", "postDate"]
         });
-        res.json(posts);
+        return res.json(posts);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -34,7 +34,7 @@ router.get("/:id/", async function (req: Request, res: Response) {
         const post = await connection.getRepository(Post).findOne(req.params.id, {
             relations: ["category", "tags", "cover"]
         });
-        res.json(post);
+        return res.json(post);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -122,7 +122,7 @@ router.post("/", async function (req: Request, res: Response) {
     }
     try {
         let post = await connection.manager.save(postInfo);
-        res.json(post);
+        return res.json(post);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -257,7 +257,7 @@ router.put("/:id", async function (req: Request, res: Response) {
             }
             try {
                 post = await connection.manager.save(post);
-                res.json(post);
+                return res.json(post);
             } catch (error) {
                 console.log(error);
                 res.sendStatus(500);

@@ -29,7 +29,7 @@ router.get("/", async function (req: Request, res: Response) {
                 })
             }
         }
-        res.json(categoriesInfo);
+        return res.json(categoriesInfo);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -41,7 +41,7 @@ router.get("/:id/", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
         const category = await connection.getRepository(Category).findOne(req.params.id);
-        res.json(category);
+        return res.json(category);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -55,7 +55,7 @@ router.post("/", async function (req: Request, res: Response) {
         let categoryInfo = new Category();
         categoryInfo.name = req.body.name;
         let category = await connection.manager.save(categoryInfo);
-        res.json(category);
+        return res.json(category);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -70,7 +70,7 @@ router.put("/:id/", async function (req: Request, res: Response) {
         try {
             categoryInfo.name = req.body.name;
             let category = await connection.manager.save(categoryInfo);
-            res.json(category);
+            return res.json(category);
         } catch (error) {
             console.log(error);
             res.sendStatus(500);
