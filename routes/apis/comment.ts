@@ -33,6 +33,14 @@ router.get("/", async function (req: Request, res: Response) {
                                 },
                                 relations: ["user"]
                             });
+                            for (const comment of comments) {
+                                comment.user = await connection.getRepository(User).findOne({
+                                    select: ["name"],
+                                    where: {
+                                        id: comment.user.id
+                                    }
+                                });
+                            }
                         } catch (error) {
                             console.log(error);
                             return res.sendStatus(500);
@@ -89,8 +97,17 @@ router.get("/:id", async function (req: Request, res: Response) {
                 },
                 order: {
                     commentDate: "ASC"
-                }
-            })
+                },
+                relations: ["user"]
+            });
+            for (const child of comment.children) {
+                child.user = await connection.getRepository(User).findOne({
+                    select: ["name"],
+                    where: {
+                        id: child.user.id
+                    }
+                });
+            }
         } catch (error) {
             
         }

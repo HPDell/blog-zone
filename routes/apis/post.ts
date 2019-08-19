@@ -37,9 +37,20 @@ router.get("/:id/", async function (req: Request, res: Response) {
         });
         try {
             post.comments = await connection.getRepository(Comment).find({
-                post: post,
-                isRoot: true
+                where: {
+                    post: post,
+                    isRoot: true
+                },
+                relations: ["user"]
             })
+            for (const comment of post.comments) {
+                comment.user = await connection.getRepository(User).findOne({
+                    select: ["name"],
+                    where: {
+                        id: comment.user.id
+                    }
+                });
+            }
         } catch (error) {
             
         }
