@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinTable } from "typeorm";
 import { Post } from "./Post";
 import { Saying } from "./Saying";
 import { User } from "./User";
@@ -10,9 +10,14 @@ export class Comment {
     id: string;
 
     @Column()
+    commentDate: Date;
+
+    @Column()
     content: string;
 
-    @ManyToOne(type => User)
+    @ManyToOne(type => User, {
+        eager: true
+    })
     user: User;
 
     @Column()
@@ -27,7 +32,7 @@ export class Comment {
     @ManyToOne(type => Comment)
     replyTo: Comment;
 
-    @ManyToOne(type => Post, post => post.tags)
-    post: Post[];
+    @ManyToOne(type => Post)
+    post: Post;
 
 }

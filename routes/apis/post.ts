@@ -8,6 +8,7 @@ import { User } from '../../entity/User';
 import { Picture } from '../../entity/Picture';
 import { Category } from '../../entity/Category';
 import { Tag } from '../../entity/Tag';
+import { Comment } from '../../entity/Comment';
 let router = express.Router();
 
 router.get("/", async function (req: Request, res: Response) {
@@ -34,6 +35,14 @@ router.get("/:id/", async function (req: Request, res: Response) {
         const post = await connection.getRepository(Post).findOne(req.params.id, {
             relations: ["category", "tags", "cover"]
         });
+        try {
+            post.comments = await connection.getRepository(Comment).find({
+                post: post,
+                isRoot: true
+            })
+        } catch (error) {
+            
+        }
         return res.json(post);
     } catch (error) {
         console.log(error);

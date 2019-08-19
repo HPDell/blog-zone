@@ -1,6 +1,13 @@
 {
-    "type": "sqlite",
-    "database": "./database.db",
+    "type": "postgres",
+    "host": "192.168.190.205",
+    "username": "HuYigong",
+    "password": "HuYGChenzxc0559",
+    "database": "blog-zone",
     "entities": ["entity/*.js"],
-    "synchronize": false
+    "migrations": ["migration/*.js"],
+    "cli": { 
+        "migrationsDir": "migration" 
+    },
+    "synchronize": true
 }
