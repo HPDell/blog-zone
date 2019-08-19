@@ -54,6 +54,21 @@ router.get("/:id/", async function (req: Request, res: Response) {
 router.post("/", async function (req: Request, res: Response) {
     const connection = getConnection();
     let postInfo = new Post();
+    let userID = req.cookies["user"];
+    try {
+        let user = await connection.getRepository(User).findOne(userID);
+        try {
+            postInfo.user = user;
+        } catch (error) {
+            console.log(error);
+            res.sendStatus(500);
+            return;
+        }
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+        return;
+    }
     postInfo.title = req.body.title;
     postInfo.content = req.body.content;
     postInfo.postDate = moment().toDate();
