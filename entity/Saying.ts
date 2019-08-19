@@ -14,7 +14,10 @@ export class Saying {
     @Column()
     sayingDate: Date;
 
-    @ManyToOne(type => User, user => user.sayings)
+    @ManyToOne(type => User, user => user.sayings, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     user: User;
 
     @OneToMany(type => Picture, picture => picture.saying)

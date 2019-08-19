@@ -27,10 +27,16 @@ export class Post {
     @OneToMany(type => Picture, picture => picture.post)
     pictures: Picture[];
 
-    @ManyToOne(type => User, user => user.posts)
+    @ManyToOne(type => User, user => user.posts, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     user: User;
 
-    @ManyToOne(type => Category, category => category.posts)
+    @ManyToOne(type => Category, category => category.posts, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     category: Category;
 
     @ManyToMany(type => Tag)

@@ -23,16 +23,25 @@ export class Comment {
     @Column()
     isRoot: boolean;
 
-    @ManyToOne(type => Comment, comment => comment.children)
+    @ManyToOne(type => Comment, comment => comment.children, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     root: Comment;
 
     @OneToMany(type => Comment, comment => comment.root)
     children: Comment[];
 
-    @ManyToOne(type => Comment)
+    @ManyToOne(type => Comment, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     replyTo: Comment;
 
-    @ManyToOne(type => Post)
+    @ManyToOne(type => Post, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+    })
     post: Post;
 
 }
