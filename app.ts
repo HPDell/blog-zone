@@ -10,6 +10,7 @@ import { createConnection } from "typeorm";
 import index from './routes/index';
 import api from './routes/api';
 import login from './routes/login';
+import { User } from "./entity/User";
 
 class ExpressStatusError extends Error {
     status: number;
@@ -30,8 +31,26 @@ createConnection().then(connection => {
     // app.use(express.static(path.join(__dirname, 'public')));
 
     app.use('/', index);
-    app.use('/api', api)
     app.use('/login', login)
+
+    app.use(async function (req: Request, res: Response, next: Function) {
+        if (req.method != "GET") {
+            let user = req.cookies["user"];
+            let token = req.cookies["token"];
+            let userInfo = await connection.getRepository(User).find({
+                id: user,
+                token: token
+            });
+            if (userInfo) {
+                next();
+            } else {
+                return res.sendStatus(500);
+            }
+        } else {
+            next();
+        }
+    })
+    app.use('/api', api)
 
     // catch 404 and forward to error handler
     app.use(function (req: Request, res: Response, next: Function) {
