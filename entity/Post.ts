@@ -3,6 +3,7 @@ import { User } from "./User";
 import { Picture } from "./Picture";
 import { Category } from "./Category";
 import { Tag } from "./Tag";
+import { Comment } from "./Comment";
 
 @Entity()
 export class Post {
@@ -35,5 +36,8 @@ export class Post {
     @ManyToMany(type => Tag)
     @JoinTable()
     tags: Tag[];
+
+    @OneToMany(type => Comment, comment => comment.post)
+    comments: Comment[];
 
 }
