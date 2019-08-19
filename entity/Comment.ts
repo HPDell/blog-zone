@@ -16,20 +16,24 @@ export class Comment {
     content: string;
 
     @ManyToOne(type => User, {
-        eager: true
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
     })
     user: User;
 
     @Column()
     isRoot: boolean;
 
-    @ManyToOne(type => Comment, comment => comment.children, {
+    @ManyToOne(type => Comment, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     })
     root: Comment;
 
-    @OneToMany(type => Comment, comment => comment.root)
+    @OneToMany(type => Comment, comment => comment.root, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     children: Comment[];
 
     @ManyToOne(type => Comment, {

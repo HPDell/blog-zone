@@ -11,13 +11,13 @@ export class Picture {
     @Column({nullable: true})
     path: string;
 
-    @ManyToOne(type => Saying, saying => saying.pictures, {
+    @ManyToOne(type => Saying, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     })
     saying: Saying;
 
-    @ManyToOne(type => Post, post => post.pictures, {
+    @ManyToOne(type => Post, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     })

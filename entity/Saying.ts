@@ -14,13 +14,16 @@ export class Saying {
     @Column()
     sayingDate: Date;
 
-    @ManyToOne(type => User, user => user.sayings, {
+    @ManyToOne(type => User, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     })
     user: User;
 
-    @OneToMany(type => Picture, picture => picture.saying)
+    @OneToMany(type => Picture, picture => picture.saying, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     pictures: Picture[];
 
 }

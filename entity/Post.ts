@@ -24,16 +24,19 @@ export class Post {
     @JoinColumn()
     cover: Picture;
 
-    @OneToMany(type => Picture, picture => picture.post)
+    @OneToMany(type => Picture, picture => picture.post, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     pictures: Picture[];
 
-    @ManyToOne(type => User, user => user.posts, {
+    @ManyToOne(type => User, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     })
     user: User;
 
-    @ManyToOne(type => Category, category => category.posts, {
+    @ManyToOne(type => Category, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
     })
@@ -43,7 +46,10 @@ export class Post {
     @JoinTable()
     tags: Tag[];
 
-    @OneToMany(type => Comment, comment => comment.post)
+    @OneToMany(type => Comment, comment => comment.post, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     comments: Comment[];
 
 }

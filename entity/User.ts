@@ -26,10 +26,16 @@ export class User {
     @Column({nullable: true})
     lastLoginTime: Date;
 
-    @OneToMany(type => Saying, saying => saying.user)
+    @OneToMany(type => Saying, saying => saying.user, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     sayings: Saying[];
 
-    @OneToMany(type => Post, post => post.user)
+    @OneToMany(type => Post, post => post.user, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     posts: Post[];
 
 }
