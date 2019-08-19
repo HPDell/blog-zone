@@ -10,7 +10,10 @@ export class Category {
     @Column()
     name: string;
 
-    @OneToMany(type => Post, post => post.tags)
+    @OneToMany(type => Post, post => post.tags, {
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE"
+    })
     posts: Post[];
 
 }

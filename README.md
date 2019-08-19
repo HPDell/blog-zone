@@ -8,6 +8,7 @@
 - 微文：`Saying`
 - 博文：`Post`
 - 图片：`Picture`
+- 评论：`Comment`
 
 已实现接口：
 
@@ -15,6 +16,7 @@
   - `post`
   - `saying`
   - `picture`
+  - `comment`
 - `login`
 
 待实现功能：

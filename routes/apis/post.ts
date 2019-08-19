@@ -8,6 +8,7 @@ import { User } from '../../entity/User';
 import { Picture } from '../../entity/Picture';
 import { Category } from '../../entity/Category';
 import { Tag } from '../../entity/Tag';
+import { Comment } from '../../entity/Comment';
 let router = express.Router();
 
 router.get("/", async function (req: Request, res: Response) {
@@ -34,6 +35,25 @@ router.get("/:id/", async function (req: Request, res: Response) {
         const post = await connection.getRepository(Post).findOne(req.params.id, {
             relations: ["category", "tags", "cover"]
         });
+        try {
+            post.comments = await connection.getRepository(Comment).find({
+                where: {
+                    post: post,
+                    isRoot: true
+                },
+                relations: ["user"]
+            })
+            for (const comment of post.comments) {
+                comment.user = await connection.getRepository(User).findOne({
+                    select: ["name"],
+                    where: {
+                        id: comment.user.id
+                    }
+                });
+            }
+        } catch (error) {
+            
+        }
         return res.json(post);
     } catch (error) {
         console.log(error);
@@ -45,6 +65,21 @@ router.get("/:id/", async function (req: Request, res: Response) {
 router.post("/", async function (req: Request, res: Response) {
     const connection = getConnection();
     let postInfo = new Post();
+    let userID = req.cookies["user"];
+    try {
+        let user = await connection.getRepository(User).findOne(userID);
+        try {
+            postInfo.user = user;
+        } catch (error) {
+            console.log(error);
+            res.sendStatus(500);
+            return;
+        }
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+        return;
+    }
     postInfo.title = req.body.title;
     postInfo.content = req.body.content;
     postInfo.postDate = moment().toDate();

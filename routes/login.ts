@@ -37,6 +37,8 @@ router.post("/", async function (req: Request, res: Response) {
             } catch (error) {
                 console.log("Update user token error.")
             }
+            res.cookie("user", user.id);
+            res.cookie("token", token);
             return res.json({
                 ...user,
                 token: token
@@ -75,6 +77,8 @@ router.post("/auto", async function (req: Request, res: Response) {
             } catch (error) {
                 console.log("Update user token error.")
             }
+            res.cookie("user", user.id);
+            res.cookie("token", req.body.token);
             return res.json(user);
         } else {
             res.sendStatus(500);
