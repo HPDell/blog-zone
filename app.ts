@@ -12,7 +12,11 @@ import api from './routes/api';
 import login from './routes/login';
 import { User } from "./entity/User";
 
-class ExpressStatusError extends Error {
+export interface BlogZoneExpressRequest extends Request {
+    user: User;
+}
+
+export class ExpressStatusError extends Error {
     status: number;
     constructor(parameters) {
         super(parameters);
@@ -33,15 +37,16 @@ createConnection().then(connection => {
     app.use('/', index);
     app.use('/login', login)
 
-    app.use(async function (req: Request, res: Response, next: Function) {
+    app.use(async function (req: BlogZoneExpressRequest, res: Response, next: Function) {
         if (req.method != "GET") {
             let user = req.cookies["user"];
             let token = req.cookies["token"];
-            let userInfo = await connection.getRepository(User).find({
+            let userInfo = await connection.getRepository(User).findOne({
                 id: user,
                 token: token
             });
-            if (userInfo) {
+            if (userInfo && userInfo.canEdit) {
+                req.user = userInfo;
                 next();
             } else {
                 return res.sendStatus(500);

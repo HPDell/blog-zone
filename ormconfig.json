@@ -1,6 +1,6 @@
 {
     "type": "postgres",
-    "host": "huyg.site",
+    "host": "127.0.0.1",
     "username": "hpdell",
     "password": "HuYGChenzxc0559",
     "database": "blog-zone",
@@ -9,5 +9,5 @@
     "cli": { 
         "migrationsDir": "migration" 
     },
-    "synchronize": false
+    "synchronize": true
 }

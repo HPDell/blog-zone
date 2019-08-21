@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm";
 import { User } from "./User";
 import { Picture } from "./Picture";
 
@@ -19,6 +19,9 @@ export class Saying {
         onUpdate: "CASCADE"
     })
     user: User;
+
+    @Column({nullable: true})
+    userId: string;
 
     @OneToMany(type => Picture, picture => picture.saying, {
         onDelete: "CASCADE",

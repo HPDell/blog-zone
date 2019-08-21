@@ -9,6 +9,7 @@ import { Picture } from '../../entity/Picture';
 import { Category } from '../../entity/Category';
 import { Tag } from '../../entity/Tag';
 import { Comment } from '../../entity/Comment';
+import { BlogZoneExpressRequest } from '../../app';
 let router = express.Router();
 
 router.get("/", async function (req: Request, res: Response) {
@@ -52,9 +53,24 @@ router.get("/:id/", async function (req: Request, res: Response) {
                 });
             }
         } catch (error) {
-            
+            console.log(error);
+            return res.sendStatus(500);
         }
-        return res.json(post);
+        let editable = false;
+        try {
+            let user = req.cookies["user"];
+            if (post.userId === user) {
+                editable = true;
+            } else {
+                editable = false;
+            }
+        } catch (error) {
+            editable = false;
+        }
+        return res.json({
+            ...post,
+            editable: editable
+        });
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -62,24 +78,10 @@ router.get("/:id/", async function (req: Request, res: Response) {
     }
 });
 
-router.post("/", async function (req: Request, res: Response) {
+router.post("/", async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
     let postInfo = new Post();
-    let userID = req.cookies["user"];
-    try {
-        let user = await connection.getRepository(User).findOne(userID);
-        try {
-            postInfo.user = user;
-        } catch (error) {
-            console.log(error);
-            res.sendStatus(500);
-            return;
-        }
-    } catch (error) {
-        console.log(error);
-        res.sendStatus(500);
-        return;
-    }
+    postInfo.user = req.user;
     postInfo.title = req.body.title;
     postInfo.content = req.body.content;
     postInfo.postDate = moment().toDate();
@@ -165,64 +167,83 @@ router.post("/", async function (req: Request, res: Response) {
     }
 });
 
-router.put("/:id", async function (req: Request, res: Response) {
+router.put("/:id", async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
     try {
         let post = await connection.getRepository(Post).findOne(req.params.id, {
             relations: ["pictures", "cover"]
         });
         if (post) {
-            post.title = req.body.title;
-            post.postDate = moment().toDate();
-            try {
-                let categoryInfo = req.body.category;
-                if (categoryInfo && categoryInfo.id) {
-                    let category = await connection.getRepository(Category).findOne(categoryInfo.id);
-                    post.category = category;
-                } else {
-                    let category = await connection.getRepository(Category).findOne("default");
-                    post.category = category;
+            if (post.userId === req.user.id) {
+                post.title = req.body.title;
+                post.postDate = moment().toDate();
+                try {
+                    let categoryInfo = req.body.category;
+                    if (categoryInfo && categoryInfo.id) {
+                        let category = await connection.getRepository(Category).findOne(categoryInfo.id);
+                        post.category = category;
+                    } else {
+                        let category = await connection.getRepository(Category).findOne("default");
+                        post.category = category;
+                    }
+                } catch (error) {
+                    console.log(error);
+                    res.sendStatus(500);
+                    return;
                 }
-            } catch (error) {
-                console.log(error);
-                res.sendStatus(500);
-                return;
-            }
-            post.tags = [];
-            let tagsInfo: Tag[] = req.body.tags;
-            for (const tagInfo of tagsInfo) {
-                if (tagInfo.name) {
-                    try {
-                        let tagExist = await connection.getRepository(Tag).findOne({
-                            name: tagInfo.name
-                        });
-                        if (tagExist) {
-                            try {
-                                let tag = await connection.manager.save(tagExist);
-                                post.tags.push(tag);
-                            } catch (error) {
-                                console.log("Save tag error:", error);
+                post.tags = [];
+                let tagsInfo: Tag[] = req.body.tags;
+                for (const tagInfo of tagsInfo) {
+                    if (tagInfo.name) {
+                        try {
+                            let tagExist = await connection.getRepository(Tag).findOne({
+                                name: tagInfo.name
+                            });
+                            if (tagExist) {
+                                try {
+                                    let tag = await connection.manager.save(tagExist);
+                                    post.tags.push(tag);
+                                } catch (error) {
+                                    console.log("Save tag error:", error);
+                                }
+                            } else {
+                                let newTag = new Tag();
+                                newTag.name = tagInfo.name;
+                                try {
+                                    let tag = await connection.manager.save(newTag);
+                                    post.tags.push(tag);
+                                } catch (error) {
+                                    console.log("Save tag error:", error);
+                                }
                             }
-                        } else {
-                            let newTag = new Tag();
-                            newTag.name = tagInfo.name;
-                            try {
-                                let tag = await connection.manager.save(newTag);
-                                post.tags.push(tag);
-                            } catch (error) {
-                                console.log("Save tag error:", error);
-                            }
+                        } catch (error) {
+                            console.log("Find tag error:", error);
                         }
-                    } catch (error) {
-                        console.log("Find tag error:", error);
                     }
                 }
-            }
-            if (req.body.cover && req.body.cover.id) {
-                let coverInfo = req.body.cover;
-                if (post.cover && post.cover.id) {
-                    if (coverInfo.id !== post.cover.id) {
-                        let oldCover = post.cover;
+                if (req.body.cover && req.body.cover.id) {
+                    let coverInfo = req.body.cover;
+                    if (post.cover && post.cover.id) {
+                        if (coverInfo.id !== post.cover.id) {
+                            let oldCover = post.cover;
+                            try {
+                                let cover = await connection.getRepository(Picture).findOne(coverInfo.id);
+                                if (cover) {
+                                    post.cover = cover;
+                                } else {
+                                    console.log("Cover not found!");
+                                }
+                            } catch (error) {
+                                console.log("Find cover error:", error);
+                            }
+                            try {
+                                await fs.remove(oldCover.path);
+                                await connection.manager.remove(oldCover);
+                            } catch (error) {
+                                console.log("Remove old cover error:", error);
+                            }
+                        }
+                    } else {
                         try {
                             let cover = await connection.getRepository(Picture).findOne(coverInfo.id);
                             if (cover) {
@@ -233,70 +254,55 @@ router.put("/:id", async function (req: Request, res: Response) {
                         } catch (error) {
                             console.log("Find cover error:", error);
                         }
-                        try {
-                            await fs.remove(oldCover.path);
-                            await connection.manager.remove(oldCover);
-                        } catch (error) {
-                            console.log("Remove old cover error:", error);
-                        }
-                    }
-                } else {
-                    try {
-                        let cover = await connection.getRepository(Picture).findOne(coverInfo.id);
-                        if (cover) {
-                            post.cover = cover;
-                        } else {
-                            console.log("Cover not found!");
-                        }
-                    } catch (error) {
-                        console.log("Find cover error:", error);
                     }
                 }
-            }
-            // 查找博文中的图片链接
-            let content = req.body.content;
-            try {
-                let pictureList = await connection.getRepository(Picture).find({
-                    post: post
-                });
-                let pictureLinkArray = content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/g);
-                if (pictureLinkArray) {
-                    for (const link of pictureLinkArray) {
-                        let pictureID = link.match(/([A-Za-z0-9]+\-){4}([A-Za-z0-9]+)/)[0];
-                        if (pictureID) {
-                            let index = pictureList.findIndex((i => i.id === pictureID));
-                            if (index > -1) {
-                                pictureList.splice(index, 1);
-                            } else {
-                                try {
-                                    let picture = await connection.getRepository(Picture).findOne(pictureID);
-                                    post.pictures.push(picture);
-                                } catch (error) {
-                                    console.log(`Query picture ${pictureID} error:`, error);
+                // 查找博文中的图片链接
+                let content = req.body.content;
+                try {
+                    let pictureList = await connection.getRepository(Picture).find({
+                        post: post
+                    });
+                    let pictureLinkArray = content.match(/\!\[\]\(\/api\/picture\/[A-Za-z0-9\-]+\/\)/g);
+                    if (pictureLinkArray) {
+                        for (const link of pictureLinkArray) {
+                            let pictureID = link.match(/([A-Za-z0-9]+\-){4}([A-Za-z0-9]+)/)[0];
+                            if (pictureID) {
+                                let index = pictureList.findIndex((i => i.id === pictureID));
+                                if (index > -1) {
+                                    pictureList.splice(index, 1);
+                                } else {
+                                    try {
+                                        let picture = await connection.getRepository(Picture).findOne(pictureID);
+                                        post.pictures.push(picture);
+                                    } catch (error) {
+                                        console.log(`Query picture ${pictureID} error:`, error);
+                                    }
                                 }
                             }
                         }
-                    }
-                    for (const pic of pictureList) {
-                        try {
-                            await fs.remove(pic.path);
-                            await connection.manager.remove(pic);
-                        } catch (error) {
-                            console.log(`Remove picture ${pic.id} error:`, error);
+                        for (const pic of pictureList) {
+                            try {
+                                await fs.remove(pic.path);
+                                await connection.manager.remove(pic);
+                            } catch (error) {
+                                console.log(`Remove picture ${pic.id} error:`, error);
+                            }
                         }
                     }
+                    post.content = content;
+                } catch (error) {
+                    console.log(`Find picture list of post ${post.id} error:`, error);
                 }
-                post.content = content;
-            } catch (error) {
-                console.log(`Find picture list of post ${post.id} error:`, error);
-            }
-            try {
-                post = await connection.manager.save(post);
-                return res.json(post);
-            } catch (error) {
-                console.log(error);
-                res.sendStatus(500);
-                return;
+                try {
+                    post = await connection.manager.save(post);
+                    return res.json(post);
+                } catch (error) {
+                    console.log(error);
+                    res.sendStatus(500);
+                    return;
+                }
+            } else {
+                return res.sendStatus(500);
             }
         }
     } catch (error) {
@@ -304,37 +310,41 @@ router.put("/:id", async function (req: Request, res: Response) {
     }
 });
 
-router.delete("/:id/", async function (req: Request, res: Response) {
+router.delete("/:id/", async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
     try {
         let post = await connection.getRepository(Post).findOne(req.params.id);
-        try {
-            let pictureList = await connection.getRepository(Picture).find({
-                post: post
-            });
-            for (const pic of pictureList) {
-                try {
-                    await fs.remove(pic.path);
+        if (post.userId === req.user.id) {
+            try {
+                let pictureList = await connection.getRepository(Picture).find({
+                    post: post
+                });
+                for (const pic of pictureList) {
                     try {
-                        await connection.manager.remove(pic);
+                        await fs.remove(pic.path);
+                        try {
+                            await connection.manager.remove(pic);
+                        } catch (error) {
+                            console.log(error);
+                            res.sendStatus(500);
+                            return;
+                        }
                     } catch (error) {
                         console.log(error);
                         res.sendStatus(500);
                         return;
                     }
-                } catch (error) {
-                    console.log(error);
-                    res.sendStatus(500);
-                    return;
                 }
+                await connection.manager.remove(post);
+                res.sendStatus(200);
+                return;
+            } catch (error) {
+                console.log(error);
+                res.sendStatus(500);
+                return;
             }
-            await connection.manager.remove(post);
-            res.sendStatus(200);
-            return;
-        } catch (error) {
-            console.log(error);
-            res.sendStatus(500);
-            return;
+        } else {
+            return res.sendStatus(500);
         }
     } catch (error) {
         console.log(error);

@@ -6,6 +6,7 @@ import { Saying } from '../../entity/Saying';
 import { getConnection } from 'typeorm';
 import { User } from '../../entity/User';
 import { Picture } from '../../entity/Picture';
+import { BlogZoneExpressRequest } from '../../app';
 let router = express.Router();
 
 router.get("/", async function (req: Request, res: Response) {
@@ -38,23 +39,15 @@ router.get("/:id/", async function (req: Request, res: Response) {
     }
 });
 
-router.post("/", async function (req: Request, res: Response) {
+router.post("/", async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
-    let userID = req.cookies["user"];
     try {
-        let user = await connection.getRepository(User).findOne(userID);
-        try {
-            let sayingInfo = new Saying();
-            sayingInfo.user = user;
-            sayingInfo.content = req.body.content;
-            sayingInfo.sayingDate = moment().toDate();
-            let saying = await connection.manager.save(sayingInfo);
-            return res.json(saying);
-        } catch (error) {
-            console.log(error);
-            res.sendStatus(500);
-            return;
-        }
+        let sayingInfo = new Saying();
+        sayingInfo.user = req.user;
+        sayingInfo.content = req.body.content;
+        sayingInfo.sayingDate = moment().toDate();
+        let saying = await connection.manager.save(sayingInfo);
+        return res.json(saying);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
@@ -62,37 +55,39 @@ router.post("/", async function (req: Request, res: Response) {
     }
 });
 
-router.delete("/:id/", async function (req: Request, res: Response) {
+router.delete("/:id/", async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
     try {
         let saying = await connection.getRepository(Saying).findOne(req.params.id);
-        try {
-            let pictureList = await connection.getRepository(Picture).find({
-                saying: saying
-            });
-            for (const pic of pictureList) {
-                try {
-                    await fs.remove(pic.path);
+        if (saying.userId === req.user.id) {
+            try {
+                let pictureList = await connection.getRepository(Picture).find({
+                    saying: saying
+                });
+                for (const pic of pictureList) {
                     try {
-                        await connection.manager.remove(pic);
+                        await fs.remove(pic.path);
+                        try {
+                            await connection.manager.remove(pic);
+                        } catch (error) {
+                            console.log(error);
+                            res.sendStatus(500);
+                            return;
+                        }
                     } catch (error) {
                         console.log(error);
                         res.sendStatus(500);
                         return;
                     }
-                } catch (error) {
-                    console.log(error);
-                    res.sendStatus(500);
-                    return;
                 }
+                await connection.manager.remove(saying);
+                res.sendStatus(200);
+                return;
+            } catch (error) {
+                console.log(error);
+                res.sendStatus(500);
+                return;
             }
-            await connection.manager.remove(saying);
-            res.sendStatus(200);
-            return;
-        } catch (error) {
-            console.log(error);
-            res.sendStatus(500);
-            return;
         }
     } catch (error) {
         console.log(error);

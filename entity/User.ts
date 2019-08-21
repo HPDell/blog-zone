@@ -26,6 +26,12 @@ export class User {
     @Column({nullable: true})
     lastLoginTime: Date;
 
+    @Column({default: false})
+    canEdit: boolean;
+
+    @Column({default: true})
+    canComment: boolean;
+
     @OneToMany(type => Saying, saying => saying.user, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
