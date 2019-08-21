@@ -8,7 +8,16 @@ import { Saying } from '../../entity/Saying';
 import { Post } from '../../entity/Post';
 import { User } from '../../entity/User';
 import moment = require('moment');
+import { BlogZoneExpressRequest } from '../../app';
 let router = express.Router();
+
+let userCheck = function (req: BlogZoneExpressRequest, res: Response, next: Function) {
+    if (req.user.canComment) {
+        next()
+    } else {
+        return res.sendStatus(500);
+    }
+}
 
 interface CommentGetQuery {
     type: "post" | "saying";
@@ -137,7 +146,7 @@ router.get("/:id/reply/", async function (req: Request, res: Response) {
     }
 });
 
-router.post("/", async function (req: Request, res: Response) {
+router.post("/", userCheck, async function (req: Request, res: Response) {
     const connection = getConnection();
     let commentInfo = new Comment();
     let userID = req.cookies["user"];

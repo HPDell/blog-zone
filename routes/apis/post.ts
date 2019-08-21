@@ -12,6 +12,14 @@ import { Comment } from '../../entity/Comment';
 import { BlogZoneExpressRequest } from '../../app';
 let router = express.Router();
 
+let userCheck = function (req: BlogZoneExpressRequest, res: Response, next: Function) {
+    if (req.user.canEdit) {
+        next()
+    } else {
+        return res.sendStatus(500);
+    }
+}
+
 router.get("/", async function (req: Request, res: Response) {
     const connection = getConnection();
     try {
@@ -78,7 +86,7 @@ router.get("/:id/", async function (req: Request, res: Response) {
     }
 });
 
-router.post("/", async function (req: BlogZoneExpressRequest, res: Response) {
+router.post("/", userCheck, async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
     let postInfo = new Post();
     postInfo.user = req.user;
@@ -167,7 +175,7 @@ router.post("/", async function (req: BlogZoneExpressRequest, res: Response) {
     }
 });
 
-router.put("/:id", async function (req: BlogZoneExpressRequest, res: Response) {
+router.put("/:id", userCheck, async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
     try {
         let post = await connection.getRepository(Post).findOne(req.params.id, {
@@ -310,7 +318,7 @@ router.put("/:id", async function (req: BlogZoneExpressRequest, res: Response) {
     }
 });
 
-router.delete("/:id/", async function (req: BlogZoneExpressRequest, res: Response) {
+router.delete("/:id/", userCheck, async function (req: BlogZoneExpressRequest, res: Response) {
     const connection = getConnection();
     try {
         let post = await connection.getRepository(Post).findOne(req.params.id);
