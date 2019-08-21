@@ -45,7 +45,7 @@ createConnection().then(connection => {
                 id: user,
                 token: token
             });
-            if (userInfo && userInfo.canEdit) {
+            if (userInfo) {
                 req.user = userInfo;
                 next();
             } else {
