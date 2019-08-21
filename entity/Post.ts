@@ -36,6 +36,9 @@ export class Post {
     })
     user: User;
 
+    @Column({nullable: true})
+    userId: string;
+
     @ManyToOne(type => Category, {
         onDelete: "CASCADE",
         onUpdate: "CASCADE"
